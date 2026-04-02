@@ -98,6 +98,58 @@ Chain-of-thought before scoring improves consistency significantly. The G-Eval p
 
 The optimal pattern: chain-of-thought reasoning + structured output for the final score.
 
+Here's what that looks like with Instructor:
+
+```python
+from pydantic import BaseModel, Field
+import instructor
+from openai import OpenAI
+
+class EvaluationStep(BaseModel):
+    criterion: str
+    observation: str
+    score: int = Field(ge=0, le=5)
+
+class Evaluation(BaseModel):
+    chain_of_thought: list[EvaluationStep] = Field(
+        description="Evaluate each criterion BEFORE assigning final score"
+    )
+    final_score: int = Field(ge=0, le=10)
+    summary: str
+
+client = instructor.from_openai(OpenAI())
+result = client.chat.completions.create(
+    model="gpt-4o",
+    response_model=Evaluation,
+    temperature=0,
+    messages=[
+        {"role": "system", "content": RUBRIC},
+        {"role": "user", "content": f"Evaluate: {response_text}"},
+    ],
+)
+```
+
+And for the ensemble:
+
+```python
+import statistics
+
+def score_with_ensemble(text, n_calls=3, temperature=0.2):
+    scores = []
+    for _ in range(n_calls):
+        result = client.chat.completions.create(
+            model="gpt-4o",
+            response_model=Evaluation,
+            temperature=temperature,
+            messages=[
+                {"role": "system", "content": RUBRIC},
+                {"role": "user", "content": f"Evaluate: {text}"},
+            ],
+        )
+        scores.append(result.final_score)
+    return statistics.median(scores)
+```
+
 ---
 
 Be aware of known biases in LLM scoring:
@@ -145,10 +197,12 @@ What techniques are you using for LLM consistency? Have you run into the same is
 ---
 
 References:
-- [Judging LLM-as-a-Judge with MT-Bench (Zheng et al., NeurIPS 2023)](https://arxiv.org/abs/2306.05685)
-- [Self-Consistency Improves Chain of Thought Reasoning (Wang et al., ICLR 2023)](https://arxiv.org/abs/2203.11171)
-- [G-Eval: NLG Evaluation using GPT-4 with Chain-of-Thought (Liu et al., 2023)](https://arxiv.org/abs/2303.16634)
-- [Prometheus: Fine-Grained Evaluation Capability (Kim et al., ICLR 2024)](https://arxiv.org/abs/2310.08491)
-- [Large Language Models are not Fair Evaluators (Wang et al., ACL 2024)](https://arxiv.org/abs/2305.17926)
-- [ChatEval: Multi-Agent Debate (Chan et al., 2023)](https://arxiv.org/abs/2308.07201)
-- [OpenAI API Seed Parameter](https://platform.openai.com/docs/guides/text-generation)
+
+[1] Zheng et al. ["Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena."](https://arxiv.org/abs/2306.05685) NeurIPS 2023.
+[2] Wang et al. ["Self-Consistency Improves Chain of Thought Reasoning in Language Models."](https://arxiv.org/abs/2203.11171) ICLR 2023.
+[3] Liu et al. ["G-Eval: NLG Evaluation using GPT-4 with Chain-of-Thought and a Form-Filling Paradigm."](https://arxiv.org/abs/2303.16634) 2023.
+[4] Kim et al. ["Prometheus: Inducing Fine-Grained Evaluation Capability in Language Models."](https://arxiv.org/abs/2310.08491) ICLR 2024.
+[5] Wang et al. ["Large Language Models are not Fair Evaluators."](https://arxiv.org/abs/2305.17926) ACL 2024.
+[6] Chan et al. ["ChatEval: Towards Better LLM-based Evaluators through Multi-Agent Debate."](https://arxiv.org/abs/2308.07201) 2023.
+[7] Wallace et al. ["The Instruction Hierarchy: Training LLMs to Prioritize Privileged Instructions."](https://arxiv.org/abs/2404.13208) OpenAI, 2024.
+[8] ["Text Generation — Seed Parameter."](https://platform.openai.com/docs/guides/text-generation) OpenAI.

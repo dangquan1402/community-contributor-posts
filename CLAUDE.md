@@ -14,9 +14,38 @@ Each post has 3 versions:
 - Write in a conversational, first-person tone — not a blog-style markdown article
 - Minimal markdown formatting in full/LinkedIn versions — no headers, bullet lists, or bold text
 - Tables and mermaid diagrams are encouraged for visual comparison
-- Always include reference links at the bottom of the full version
+- Always include a numbered references section at the bottom (see References format below)
+- Include code snippets (pseudo-code or real) where they clarify a concept
 - Each post should end with a discussion question
 - LinkedIn version should link to the full version on GitHub
+
+## References Format
+
+Inspired by [Lilian Weng's blog](https://lilianweng.github.io/). Use numbered references at the bottom of full posts and Jekyll posts:
+
+```
+References:
+
+[1] Author et al. ["Paper Title."](https://arxiv.org/abs/XXXX.XXXXX) Venue Year.
+[2] Author et al. ["Paper Title."](https://link) Venue Year.
+[3] ["Documentation Page Title."](https://docs.example.com/page) Provider.
+```
+
+In-body text, use inline author-date citations linked directly:
+```
+The [Prometheus paper (Kim et al., ICLR 2024)](https://arxiv.org/abs/2310.08491) showed that...
+```
+
+For LinkedIn versions, references are not needed — link to the full version instead.
+
+## Code Snippets
+
+Use fenced code blocks with language tags for pseudo-code or real examples:
+- `python` for Python snippets
+- `json` for API request/response examples
+- `text` or no tag for pseudo-code
+
+Keep snippets short and focused — illustrate one concept per snippet. Pseudo-code is preferred over full implementations.
 
 ## Mermaid Diagrams
 

@@ -85,6 +85,54 @@ Instructor, created by Jason Liu, took a different approach. Instead of abstract
 
 It supports all major providers: OpenAI, Anthropic, Google, Mistral, Groq, Together, Ollama, and more. And it patches the native SDK rather than replacing it, so you keep full access to provider-specific features.
 
+Here's what Instructor looks like in practice:
+
+```python
+import instructor
+from openai import OpenAI
+from pydantic import BaseModel, Field
+from typing import Literal
+
+class SentimentAnalysis(BaseModel):
+    sentiment: Literal["positive", "negative", "neutral"] = Field(
+        description="Overall sentiment of the text"
+    )
+    confidence: float = Field(
+        description="Confidence score between 0 and 1",
+        ge=0, le=1
+    )
+    reasoning: str = Field(
+        description="Brief explanation for the sentiment classification"
+    )
+
+client = instructor.from_openai(OpenAI())
+
+result = client.chat.completions.create(
+    model="gpt-4o",
+    response_model=SentimentAnalysis,
+    messages=[{"role": "user", "content": "I love this product!"}],
+)
+# result.sentiment = "positive", result.confidence = 0.95
+```
+
+Compare that to the old prompt-hacking approach:
+
+```python
+# The bad old days
+response = openai.chat.completions.create(
+    messages=[{
+        "role": "user",
+        "content": """Analyze sentiment. You MUST respond in this exact JSON format:
+        {"sentiment": "positive/negative/neutral", "confidence": 0.0-1.0}
+        
+        Text: I love this product!"""
+    }]
+)
+# Hope it's valid JSON... hope it has the right fields...
+import json
+result = json.loads(response.choices[0].message.content)  # might crash
+```
+
 
 The schema definition side has converged on Pydantic, and I think that's the right choice. If you work with Python, you probably already use Pydantic — it's the standard for FastAPI, SQLAlchemy integrations, data validation everywhere.
 
@@ -129,11 +177,12 @@ What tools are you using for structured output? I'd love to hear what's working 
 
 
 References:
-- OpenAI Function Calling: https://platform.openai.com/docs/guides/function-calling
-- OpenAI Structured Outputs: https://platform.openai.com/docs/guides/structured-outputs
-- Anthropic Tool Use: https://docs.anthropic.com/en/docs/build-with-claude/tool-use
-- Google Gemini Function Calling: https://ai.google.dev/gemini-api/docs/function-calling
-- Instructor: https://python.useinstructor.com/
-- LangChain Structured Output: https://python.langchain.com/docs/how_to/structured_output/
-- Pydantic: https://docs.pydantic.dev/latest/
-- AWS Bedrock Converse API: https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html
+
+[1] ["Function Calling."](https://platform.openai.com/docs/guides/function-calling) OpenAI.
+[2] ["Structured Outputs."](https://platform.openai.com/docs/guides/structured-outputs) OpenAI.
+[3] ["Tool Use (Function Calling)."](https://docs.anthropic.com/en/docs/build-with-claude/tool-use) Anthropic.
+[4] ["Function Calling."](https://ai.google.dev/gemini-api/docs/function-calling) Google Gemini.
+[5] ["Instructor — Structured Outputs for LLMs."](https://python.useinstructor.com/) Jason Liu.
+[6] ["How to Return Structured Output."](https://python.langchain.com/docs/how_to/structured_output/) LangChain.
+[7] ["Pydantic Documentation."](https://docs.pydantic.dev/latest/) Pydantic.
+[8] ["Converse API."](https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html) AWS Bedrock.

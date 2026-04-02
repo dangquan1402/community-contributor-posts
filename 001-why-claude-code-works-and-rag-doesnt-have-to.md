@@ -74,6 +74,37 @@ This is essentially ReAct — Reasoning plus Acting. The same pattern we experim
 
 But the key difference now is model capability. With stronger models and longer context windows, that simple loop of search, read, reason, search again — it just works. No complex orchestration needed.
 
+Here's what the agentic approach looks like in pseudo-code:
+
+```python
+def answer_question(query, documents):
+    context = []
+    search_terms = generate_search_terms(query)
+    
+    while not enough_context(context, query):
+        results = grep(documents, search_terms)
+        for match in results:
+            content = read_file(match.file, match.line_range)
+            context.append(content)
+        search_terms = refine_terms(query, context)
+    
+    return llm.generate(query, context)
+```
+
+Compare that to a traditional RAG pipeline:
+
+```python
+def answer_question_rag(query, vector_db):
+    query_embedding = embed(query)
+    chunks = vector_db.search(query_embedding, top_k=10)
+    # Hope the right chunks are in the top 10...
+    # Hope the threshold is right...
+    # Hope the embedding captured the semantics...
+    return llm.generate(query, chunks)
+```
+
+The agentic version has a feedback loop — it can search again if it didn't find enough. The RAG version is one-shot.
+
 
 Recently, I started a new chat-with-file project. Inspired by Claude Code, I skipped the entire embedding pipeline. Just a ReAct agent with a grep-like search tool.
 
@@ -87,10 +118,10 @@ What's your experience? Have you moved away from traditional RAG toward agentic 
 
 
 References:
-- Claude Code: https://docs.anthropic.com/en/docs/claude-code
-- ReAct pattern: https://arxiv.org/abs/2210.03629
-- LangChain ReAct: https://python.langchain.com/docs/how_to/migrate_agent/
-- LangGraph: https://langchain-ai.github.io/langgraph/
-- Azure Document Intelligence: https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/
-- AWS Textract: https://aws.amazon.com/textract/
-- BM25 (Okapi): https://en.wikipedia.org/wiki/Okapi_BM25
+
+[1] Yao et al. ["ReAct: Synergizing Reasoning and Acting in Language Models."](https://arxiv.org/abs/2210.03629) ICLR 2023.
+[2] ["Claude Code Documentation."](https://docs.anthropic.com/en/docs/claude-code) Anthropic.
+[3] ["LangGraph Documentation."](https://langchain-ai.github.io/langgraph/) LangChain.
+[4] ["Azure AI Document Intelligence."](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/) Microsoft.
+[5] ["Amazon Textract."](https://aws.amazon.com/textract/) AWS.
+[6] ["Okapi BM25."](https://en.wikipedia.org/wiki/Okapi_BM25) Wikipedia.

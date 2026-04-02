@@ -99,6 +99,37 @@ Third, messages. The conversation history, oldest first. As the conversation gro
 
 Fourth, the latest user message. This changes every turn, so it's almost never cached.
 
+Here's what a well-structured Anthropic API request looks like with cache breakpoints:
+
+```json
+{
+  "model": "claude-sonnet-4-20250514",
+  "max_tokens": 4096,
+  "system": [
+    {
+      "type": "text",
+      "text": "You are an AI assistant with access to many tools...",
+      "cache_control": {"type": "ephemeral"}
+    }
+  ],
+  "tools": [
+    {"name": "search", "description": "...", "input_schema": {"...": "..."}},
+    {"name": "read_file", "description": "...", "input_schema": {"...": "..."}},
+    {
+      "name": "write_file",
+      "description": "...",
+      "input_schema": {"...": "..."},
+      "cache_control": {"type": "ephemeral"}
+    }
+  ],
+  "messages": [
+    {"role": "user", "content": "Find and fix the bug in auth.py"}
+  ]
+}
+```
+
+Notice: cache_control goes on the last item in each block — the last system text block, the last tool. That's because caching is prefix-based.
+
 This ordering matters because caching is prefix-based. If you change something early — say you modify the system prompt — everything downstream is invalidated. That's why you want the most stable content at the front and the most variable content at the end.
 
 Anthropic's pricing makes the economics clear: cache writes cost 25% more than normal input tokens, but cache reads are 90% cheaper. So you pay a small premium on the first call, then save dramatically on every subsequent call. For a long system prompt with many tools, the break-even is typically after 2-4 requests. After that, you're saving 50-90% on input costs.
@@ -131,8 +162,9 @@ Are you using prompt caching in production? I'd love to hear how it's affected y
 
 
 References:
-- Anthropic Prompt Caching: https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching
-- Anthropic Prompt Caching announcement: https://www.anthropic.com/news/prompt-caching
-- OpenAI Prompt Caching: https://platform.openai.com/docs/guides/prompt-caching
-- OpenAI Prompt Caching announcement: https://openai.com/index/api-prompt-caching/
-- Google Gemini Context Caching: https://ai.google.dev/gemini-api/docs/caching
+
+[1] ["Prompt Caching."](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching) Anthropic.
+[2] ["Prompt Caching with Claude."](https://www.anthropic.com/news/prompt-caching) Anthropic Blog, Aug 2024.
+[3] ["Prompt Caching."](https://platform.openai.com/docs/guides/prompt-caching) OpenAI.
+[4] ["API Prompt Caching."](https://openai.com/index/api-prompt-caching/) OpenAI Blog, Oct 2024.
+[5] ["Context Caching."](https://ai.google.dev/gemini-api/docs/caching) Google Gemini.
