@@ -12,12 +12,49 @@ Each post has 3 versions:
 ## Writing Conventions
 
 - Write in a conversational, first-person tone — not a blog-style markdown article
-- Minimal markdown formatting in full/LinkedIn versions — no headers, bullet lists, or bold text
+- Full/LinkedIn versions: minimal markdown — no headers, bullet lists, or bold text
+- Jekyll posts (_posts/): use `## Section Headers` and kramdown TOC (see below)
 - Tables and mermaid diagrams are encouraged for visual comparison
 - Always include a numbered references section at the bottom (see References format below)
+- Use inline references in body text: `[text [N]](url)` linking to the numbered refs
 - Include code snippets (pseudo-code or real) where they clarify a concept
+- Each reference line must end with two trailing spaces for markdown line breaks
 - Each post should end with a discussion question
 - LinkedIn version should link to the full version on GitHub
+
+## Jekyll Post Structure
+
+Jekyll posts use section headers and an auto-generated TOC. Structure:
+
+```
+---
+layout: post
+title: "Post Title"
+date: YYYY-MM-DD
+---
+
+Introduction paragraph (1-2 sentences setting context).
+
+* TOC
+{:toc}
+
+## First Section
+
+Content...
+
+## Second Section
+
+Content...
+
+---
+
+References:
+
+[1] ...  
+[2] ...  
+```
+
+The TOC goes after the introduction paragraph, before the first `##` heading.
 
 ## References Format
 
@@ -47,46 +84,48 @@ Use fenced code blocks with language tags for pseudo-code or real examples:
 
 Keep snippets short and focused — illustrate one concept per snippet. Pseudo-code is preferred over full implementations.
 
-## Mermaid Diagrams
+## Mermaid Diagrams & Visual Guidelines
 
-Use mermaid diagrams to make posts more visual. Two rendering targets:
+Use `/mermaid-review` to review and improve diagrams in a post.
 
-**Full posts (GitHub .md files)** — use fenced code blocks:
-````
-```mermaid
-timeline
-    title Example
-    section Phase 1
-        2024 : Event A
-```
-````
+### Rendering targets
 
-**Jekyll posts (_posts/)** — use HTML tags:
-```html
-<pre class="mermaid">
-timeline
-    title Example
-    section Phase 1
-        2024 : Event A
-</pre>
-```
+- Full posts (.md): fenced ` ```mermaid ` code blocks (GitHub renders natively)
+- Jekyll posts (_posts/): `<pre class="mermaid">` HTML tags
 
-### Diagram types to use
+### When to use a diagram vs a table
 
-- `timeline` — for showing evolution/progression over time (preferred for chronological content)
-- `graph TD` — for top-down flows (e.g., how a process works step by step, decision trees)
-- `graph LR` — for left-to-right flows (e.g., cost progression, request lifecycle)
+**Use a table when:**
+- Comparing things (A vs B, before/after, provider differences)
+- Items have multiple attributes (table rows handle this; graph nodes don't)
+- Labels would be long/cramped in a diagram
+- Showing two disconnected paths side by side (e.g., "bad" vs "good")
+- Showing concrete numbers or calculations
 
-### Do NOT use `graph LR` for timelines. Use the `timeline` diagram type instead.
+**Use a diagram when:**
+- Showing a flow with a feedback loop or cycle
+- Showing a pipeline with clear directionality (A → B → C)
+- The visual shape itself communicates meaning (gradient, hierarchy)
 
-### Styling
+**Often the best approach is both:** a compact diagram for the shape + a table for the details.
 
-- For `graph` diagrams, use consistent color palette:
-  - Green tones for positive/final states: `fill:#2a9d8f`, `fill:#2d6a4f`, `fill:#40916c`
-  - Red/orange for initial/problem states: `fill:#e76f51`, `fill:#f4a261`
-  - Yellow for intermediate/decision states: `fill:#e9c46a`
-  - Dark for neutral: `fill:#264653`
-- For `timeline` diagrams, sections get auto-colored — no manual styling needed
+### Diagram type selection
+
+- `timeline` — chronological progressions (feature launches, adoption phases). Use `section` to group.
+- `graph LR` — preferred for flows, pipelines, priority chains, cycles. Reads left-to-right.
+- `graph TD` — avoid in most cases. Only for deep decision trees with 4+ branching levels.
+
+### Do NOT use `graph LR` for timelines. Use `timeline` instead.
+
+### Graph diagram rules
+
+- **Labels: 1-3 words per node.** Put details in surrounding text or a companion table.
+- Color palette:
+  - Green: `fill:#2a9d8f`, `fill:#2d6a4f`, `fill:#40916c` (positive/final states)
+  - Red/orange: `fill:#e76f51`, `fill:#f4a261` (problem/initial states)
+  - Yellow: `fill:#e9c46a` (decisions/intermediate)
+  - Dark: `fill:#264653` (neutral/start)
+  - Green gradients (dark→light) for stability/priority spectrums
 
 ## GitHub Pages
 
