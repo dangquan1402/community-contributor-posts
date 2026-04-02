@@ -226,13 +226,12 @@ The sweet spot: basic OCR ($1.50/1K) + GPT-4o-mini for reasoning (~$1.55-2.00 to
 
 | Need | Approach | Cost per 1K pages | Why |
 |---|---|---|---|
-| Summarize a document | Gemini Flash 2.5 or GPT-4o-mini | ~$0.41-1.35 | Cheapest, good enough |
-| Extract text as markdown | Gemini Flash 2.5 or GPT-4o-mini | ~$0.41-1.35 | Competitive quality, comparable to OCR cost |
-| Robust entity extraction | OCR + GPT-4o-mini (text) | ~$1.55-2.00 | OCR accuracy + LLM reasoning |
-| High-quality understanding | Claude Sonnet or GPT-4o | ~$7-17 | Best reasoning |
-| Exact text from native PDFs | PyMuPDF / pypdf | Free | Perfect fidelity |
-| Exact text from scanned docs | Textract or Azure (Read) | $1.50 | Reliable, no hallucination |
-| Table extraction | Textract or Azure (Layout) | $10-15 | Structured output |
+| Exact text from native PDFs | PyMuPDF / pypdf (direct) | Free | No OCR needed, perfect fidelity |
+| Summarize or quick understanding | Image → Gemini Flash 2.5 or GPT-4o-mini | ~$0.41-1.35 | Cheap, good enough when exact text isn't critical |
+| Exact text from scanned docs | Textract or Azure (Read) | $1.50 | Reliable OCR, no hallucination |
+| **Robust information extraction** | **OCR → LLM (text, not image)** | **~$1.55-2.00** | **Best trade-off: OCR accuracy + LLM reasoning** |
+| Table extraction | Textract or Azure (Layout) | $10-15 | Structured output with positions |
+| Complex understanding | Image → Claude Sonnet or GPT-4o | ~$7-17 | Best reasoning, most expensive |
 | Forms and key-value pairs | Textract or Azure (Forms) | $10-50 | Accurate but expensive |
 | Compliance-critical | OCR + human review | $1.50-50 | Zero hallucination risk |
 
