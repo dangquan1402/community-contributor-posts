@@ -1,0 +1,13 @@
+title: Dquan's LLM Notes
+description: Open discussions on working with LLMs
+baseurl: "/community-contributor-posts"
+url: "https://dangquan1402.github.io"
+theme: minima
+
+author:
+  name: Quan Dang
+
+show_excerpts: true
+
+header_pages:
+  - about.md
