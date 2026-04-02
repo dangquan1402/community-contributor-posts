@@ -110,3 +110,12 @@ This is also why understanding the caching layer matters when you're choosing be
 Most developers I talk to think about prompt engineering in terms of what to say. But how you structure the prompt — what goes where, what stays stable — is just as important for production systems. Caching turns prompt architecture into a cost and performance lever.
 
 Are you using prompt caching in production? I'd love to hear how it's affected your costs.
+
+---
+
+References:
+- [Anthropic Prompt Caching](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching)
+- [Anthropic Prompt Caching announcement](https://www.anthropic.com/news/prompt-caching)
+- [OpenAI Prompt Caching](https://platform.openai.com/docs/guides/prompt-caching)
+- [OpenAI Prompt Caching announcement](https://openai.com/index/api-prompt-caching/)
+- [Google Gemini Context Caching](https://ai.google.dev/gemini-api/docs/caching)
