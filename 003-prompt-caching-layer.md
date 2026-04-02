@@ -10,6 +10,55 @@ Every time you make an API call to an LLM, you're sending the full prompt: syste
 Prompt caching solves this. The idea is simple: if the beginning of your prompt hasn't changed since the last call, don't reprocess it. Cache it and reuse it.
 
 
+Here's how the three major providers compare:
+
+| Feature | Anthropic | OpenAI | Google Gemini |
+|---|---|---|---|
+| Launch | Aug 2024 | Oct 2024 | Jun 2024 |
+| Mode | Explicit (manual breakpoints) | Implicit (automatic) | Explicit (cached resource) |
+| Min tokens | 1,024 - 2,048 | 1,024 | 32,768 |
+| TTL | 5 min (refreshes on hit) | ~5-60 min (automatic) | Configurable (default 1hr) |
+| Write cost | +25% surcharge | No surcharge | Standard |
+| Read discount | 90% off | 50% off | ~75% off |
+| Max breakpoints | 4 per request | N/A | N/A |
+| Best for | Agentic workflows, many tools | Zero-config simplicity | Massive contexts (docs, codebases) |
+
+And here's how the prompt layers map to caching priority — the most stable content sits at the top, the most variable at the bottom:
+
+```mermaid
+graph TD
+    A["1. System Prompt<br/><i>Most stable — cached first</i>"] --> B["2. Tool Definitions<br/><i>Rarely changes mid-conversation</i>"]
+    B --> C["3. Message History<br/><i>Older messages form stable prefix</i>"]
+    C --> D["4. Latest User Message<br/><i>Changes every turn — rarely cached</i>"]
+
+    style A fill:#2d6a4f,stroke:#1b4332,color:#fff
+    style B fill:#40916c,stroke:#2d6a4f,color:#fff
+    style C fill:#74c69d,stroke:#40916c,color:#000
+    style D fill:#d8f3dc,stroke:#74c69d,color:#000
+```
+
+The cost impact over multiple requests looks like this:
+
+```mermaid
+graph LR
+    subgraph "Request 1 (Cold)"
+        R1["Full price<br/>+ write surcharge (Anthropic)<br/>= cache populated"]
+    end
+    subgraph "Request 2-4 (Warm)"
+        R2["Cache hit on prefix<br/>Only new tokens at full price<br/>Break-even point"]
+    end
+    subgraph "Request 5+ (Savings)"
+        R3["90% off cached prefix (Anthropic)<br/>50% off cached prefix (OpenAI)<br/>~75% off cached prefix (Google)"]
+    end
+    R1 --> R2 --> R3
+
+    style R1 fill:#e76f51,stroke:#e76f51,color:#fff
+    style R2 fill:#f4a261,stroke:#f4a261,color:#000
+    style R3 fill:#2a9d8f,stroke:#2a9d8f,color:#fff
+```
+
+Now let me go deeper into each provider.
+
 Google was actually first to ship this, launching Context Caching for Gemini in June 2024. But it's designed for a different use case — very large contexts (minimum 32,768 tokens) that persist for hours. You create a cached resource explicitly and reference it across requests. It comes with a storage cost per hour, so it makes sense when you're doing many requests against the same large document or codebase.
 
 Anthropic introduced prompt caching in August 2024, and for me this is where it got interesting. Their approach is manual and explicit. You mark specific points in your prompt with cache_control breakpoints. The system caches everything from the start of the prompt up to each breakpoint. On the next request, if the prefix up to a breakpoint is byte-for-byte identical, you get a cache hit.
