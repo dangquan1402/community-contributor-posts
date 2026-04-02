@@ -1,6 +1,6 @@
-Why Claude Code Works — And Why You Might Not Need RAG Anymore
+Why Claude Code Works — And Why You Might Not Need RAG (Embedding) Anymore
 
-I've spent the past year and a half building LLM-powered applications, from early RAG pipelines to agentic coding workflows. Here's what I've learned about why Claude Code succeeds where traditional RAG often struggles.
+I've spent the past year and a half building LLM-powered applications, from early RAG (embedding) pipelines to agentic coding workflows. Here's what I've learned about why Claude Code succeeds where traditional embedding-based RAG often struggles.
 
 
 I started with chat-with-file systems, mostly PDFs. Embedding-based retrieval felt like the obvious approach. It was meant to solve two fundamental LLM limitations: context length and the needle-in-a-haystack problem.
@@ -29,7 +29,7 @@ Recently, I started a new chat-with-file project. Inspired by Claude Code, I ski
 
 It works remarkably well. No chunking strategies. No embedding models. No similarity thresholds. No vector databases. Just a capable model, a search tool, and the ability to reason over what it finds.
 
-I'm not saying RAG is dead. There are real use cases for vector search at scale. But for many applications, especially with structured or semi-structured documents, the simplest agentic approach can outperform a sophisticated retrieval pipeline.
+I'm not saying RAG (embedding) is dead. There are real use cases for vector search at scale. But for many applications, especially with structured or semi-structured documents, the simplest agentic approach can outperform a sophisticated retrieval pipeline.
 
 The lesson: don't start with the most complex architecture. Start with a capable model, give it the right tools, and let it reason.
 
