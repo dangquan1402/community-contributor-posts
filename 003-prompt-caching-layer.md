@@ -25,17 +25,26 @@ Here's how the three major providers compare:
 
 And here's how the prompt layers map to caching priority — the most stable content sits at the top, the most variable at the bottom:
 
+| Layer | Stability | Cache behavior | Change = |
+|---|---|---|---|
+| 1. System Prompt | Highest | Cached first | Invalidates everything |
+| 2. Tool Definitions | High | Cached after system | Invalidates tools + messages |
+| 3. Message History | Growing | Older messages cached | Only new messages re-processed |
+| 4. Latest User Message | None | Never cached | Changes every turn |
+
 ```mermaid
-graph TD
-    A["1. System Prompt<br/><i>Most stable — cached first</i>"] --> B["2. Tool Definitions<br/><i>Rarely changes mid-conversation</i>"]
-    B --> C["3. Message History<br/><i>Older messages form stable prefix</i>"]
-    C --> D["4. Latest User Message<br/><i>Changes every turn — rarely cached</i>"]
+graph LR
+    A["System Prompt"] --> B["Tools"]
+    B --> C["Messages"]
+    C --> D["User Input"]
 
     style A fill:#2d6a4f,stroke:#1b4332,color:#fff
     style B fill:#40916c,stroke:#2d6a4f,color:#fff
     style C fill:#74c69d,stroke:#40916c,color:#000
     style D fill:#d8f3dc,stroke:#74c69d,color:#000
 ```
+
+The green gradient shows stability: dark green (most stable, cached first) to light (most variable, never cached). Change anything early, and everything after it is invalidated.
 
 Here's when each provider launched:
 
@@ -63,31 +72,23 @@ timeline
                  : No write surcharge
 ```
 
-The cost impact over multiple requests:
+The cost impact over multiple requests — say you have a 5,000-token cached prefix (system + tools) and make 10 API calls:
 
-```mermaid
-graph LR
-    subgraph "Request 1 (Cold)"
-        R1["Full price<br/>+ write surcharge (Anthropic)<br/>= cache populated"]
-    end
-    subgraph "Request 2-4 (Warm)"
-        R2["Cache hit on prefix<br/>Only new tokens at full price<br/>Break-even point"]
-    end
-    subgraph "Request 5+ (Savings)"
-        R3["90% off cached prefix (Anthropic)<br/>50% off cached prefix (OpenAI)<br/>~75% off cached prefix (Google)"]
-    end
-    R1 --> R2 --> R3
+| Request | Anthropic (cached prefix cost) | OpenAI (cached prefix cost) |
+|---|---|---|
+| #1 (cold) | 5,000 × 1.25x = **6,250 token-equivalents** | 5,000 × 1.0x = **5,000** |
+| #2 (warm) | 5,000 × 0.1x = **500** | 5,000 × 0.5x = **2,500** |
+| #3-10 (warm) | 500 each × 8 = **4,000** | 2,500 each × 8 = **20,000** |
+| **Total (10 calls)** | **10,750** (vs 50,000 without caching) | **27,500** (vs 50,000) |
+| **Savings** | **~78% off** | **~45% off** |
 
-    style R1 fill:#e76f51,stroke:#e76f51,color:#fff
-    style R2 fill:#f4a261,stroke:#f4a261,color:#000
-    style R3 fill:#2a9d8f,stroke:#2a9d8f,color:#fff
-```
+Anthropic's higher write surcharge pays for itself after just 2 requests. By request 10, the 90% read discount dominates.
 
 Now let me go deeper into each provider.
 
-Google was actually first to ship this, launching Context Caching for Gemini in June 2024. But it's designed for a different use case — very large contexts (minimum 32,768 tokens) that persist for hours. You create a cached resource explicitly and reference it across requests. It comes with a storage cost per hour, so it makes sense when you're doing many requests against the same large document or codebase.
+Google was actually first to ship this, launching [Context Caching for Gemini [5]](https://ai.google.dev/gemini-api/docs/caching) in June 2024. But it's designed for a different use case — very large contexts (minimum 32,768 tokens) that persist for hours. You create a cached resource explicitly and reference it across requests. It comes with a storage cost per hour, so it makes sense when you're doing many requests against the same large document or codebase.
 
-Anthropic introduced prompt caching in August 2024, and for me this is where it got interesting. Their approach is manual and explicit. You mark specific points in your prompt with cache_control breakpoints. The system caches everything from the start of the prompt up to each breakpoint. On the next request, if the prefix up to a breakpoint is byte-for-byte identical, you get a cache hit.
+[Anthropic introduced prompt caching [1]](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching) in August 2024, and for me this is where it got interesting. Their approach is manual and explicit. You mark specific points in your prompt with cache_control breakpoints. The system caches everything from the start of the prompt up to each breakpoint. On the next request, if the prefix up to a breakpoint is byte-for-byte identical, you get a cache hit.
 
 The structure follows the natural order of a prompt:
 
@@ -139,7 +140,7 @@ There are some constraints. You need at least 1,024 tokens for Claude 3.5 Sonnet
 The latency improvement is significant too. Anthropic reports up to 85% reduction in time-to-first-token for long prompts. In agentic workflows where the model might make 5-10 tool calls in a row, each one reusing the same system prompt and tools, this is a real difference.
 
 
-OpenAI followed in October 2024 with a different philosophy: automatic caching. No breakpoints, no configuration. The system detects when the first 1,024+ tokens of a prompt match a previous request and caches automatically, checking in 128-token increments after that.
+[OpenAI followed in October 2024 [3]](https://platform.openai.com/docs/guides/prompt-caching) with a different philosophy: automatic caching. No breakpoints, no configuration. The system detects when the first 1,024+ tokens of a prompt match a previous request and caches automatically, checking in 128-token increments after that.
 
 The trade-off is different. OpenAI gives you a 50% discount on cache hits with no write surcharge. Less aggressive savings than Anthropic's 90%, but also no upfront cost penalty. You just structure your prompts well and caching happens transparently.
 
@@ -163,8 +164,8 @@ Are you using prompt caching in production? I'd love to hear how it's affected y
 
 References:
 
-[1] ["Prompt Caching."](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching) Anthropic.
-[2] ["Prompt Caching with Claude."](https://www.anthropic.com/news/prompt-caching) Anthropic Blog, Aug 2024.
-[3] ["Prompt Caching."](https://platform.openai.com/docs/guides/prompt-caching) OpenAI.
-[4] ["API Prompt Caching."](https://openai.com/index/api-prompt-caching/) OpenAI Blog, Oct 2024.
-[5] ["Context Caching."](https://ai.google.dev/gemini-api/docs/caching) Google Gemini.
+[1] ["Prompt Caching."](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching) Anthropic.  
+[2] ["Prompt Caching with Claude."](https://www.anthropic.com/news/prompt-caching) Anthropic Blog, Aug 2024.  
+[3] ["Prompt Caching."](https://platform.openai.com/docs/guides/prompt-caching) OpenAI.  
+[4] ["API Prompt Caching."](https://openai.com/index/api-prompt-caching/) OpenAI Blog, Oct 2024.  
+[5] ["Context Caching."](https://ai.google.dev/gemini-api/docs/caching) Google Gemini.  

@@ -9,7 +9,7 @@ The first thing most people reach for is temperature. Set it to 0, problem solve
 
 Temperature=0 means greedy decoding — the model always picks the highest-probability token. It's the most deterministic setting available, but it's not truly deterministic. GPU floating-point operations are inherently non-deterministic due to parallel reduction — different thread execution orders produce slightly different rounding, which can flip the result when two tokens have near-identical probabilities.
 
-OpenAI introduced a seed parameter in late 2023. When you set seed + temperature=0, they aim for deterministic outputs and return a system_fingerprint. But their docs explicitly say it's "best effort." Backend changes, model updates, load balancing across different hardware — all can break reproducibility. In practice, users report 85-95% reproducibility, not 100%.
+[OpenAI introduced a seed parameter [8]](https://platform.openai.com/docs/guides/text-generation) in late 2023. When you set seed + temperature=0, they aim for deterministic outputs and return a system_fingerprint. But their docs explicitly say it's "best effort." Backend changes, model updates, load balancing across different hardware — all can break reproducibility. In practice, users report 85-95% reproducibility, not 100%.
 
 Anthropic doesn't expose a seed parameter at all. Temperature=0 with greedy decoding is the best you get.
 
@@ -25,19 +25,13 @@ Bottom line: temperature helps, but alone it's not enough for a reliable scoring
 
 The second and most overlooked thing is prompt quality. If your instructions have contradictions or ambiguity, the model will be inconsistent — not because it's random, but because it's interpreting unclear guidance differently each time.
 
-```mermaid
-graph TD
-    A["Ambiguous Prompt<br/>Vague criteria, no examples"] --> B["Model interprets differently each call"]
-    B --> C["Inconsistent scores"]
-    
-    D["Clear Prompt<br/>Detailed rubric + examples"] --> E["Model follows consistent criteria"]
-    E --> F["Consistent scores"]
-
-    style A fill:#e76f51,stroke:#e76f51,color:#fff
-    style C fill:#e76f51,stroke:#e76f51,color:#fff
-    style D fill:#2a9d8f,stroke:#2a9d8f,color:#fff
-    style F fill:#2a9d8f,stroke:#2a9d8f,color:#fff
-```
+| | Ambiguous Prompt | Clear Prompt |
+|---|---|---|
+| Criteria | "Score the quality" | "Score 1-5 based on accuracy, completeness, clarity" |
+| Examples | None | 2-3 anchor examples with scores and explanations |
+| Score range | "Rate 0-10" | Explicit description per level (see below) |
+| Result | Model interprets differently each call | Model follows consistent criteria |
+| Consistency | Low | High |
 
 Check for conflicts between your system prompt and tool descriptions. If the system prompt says "be strict" and a tool description says "be lenient," the model is stuck. This connects directly to what I wrote about in my prompt priority post — conflicting instructions at the same priority level create inconsistency.
 
@@ -48,7 +42,7 @@ The third technique is what made the biggest difference for me: detailed rubrics
 
 If you tell the model "score from 0 to 10," you'll get inconsistent results. The model's idea of a 6 versus a 7 is fuzzy. But if you define exactly what each score range means, consistency improves dramatically.
 
-The Prometheus paper (Kim et al., ICLR 2024) showed this rigorously — providing explicit score-level descriptions significantly outperformed generic "rate from 1-5" prompts.
+The [Prometheus paper (Kim et al., ICLR 2024) [4]](https://arxiv.org/abs/2310.08491) showed this rigorously — providing explicit score-level descriptions significantly outperformed generic "rate from 1-5" prompts.
 
 Here's how I structure it:
 
@@ -94,7 +88,7 @@ graph LR
     style E4 fill:#2a9d8f,stroke:#2a9d8f,color:#fff
 ```
 
-The Self-Consistency paper (Wang et al., ICLR 2023) showed that sampling multiple reasoning paths and taking majority vote significantly improves accuracy. The same principle applies to scoring.
+The [Self-Consistency paper (Wang et al., ICLR 2023) [2]](https://arxiv.org/abs/2203.11171) showed that sampling multiple reasoning paths and taking majority vote significantly improves accuracy. The same principle applies to scoring.
 
 | Aggregation method | Best for | Notes |
 |---|---|---|
@@ -114,7 +108,7 @@ You can also ensemble across models — GPT-4 + Claude + Gemini. Different model
 
 One more thing worth knowing: chain-of-thought before scoring improves consistency significantly.
 
-The G-Eval paper (Liu et al., 2023) showed that having the model reason through evaluation criteria before assigning a score improved correlation with human judgments substantially — Spearman correlation went from ~0.38 to ~0.51 on summarization tasks.
+The [G-Eval paper (Liu et al., 2023) [3]](https://arxiv.org/abs/2303.16634) showed that having the model reason through evaluation criteria before assigning a score improved correlation with human judgments substantially — Spearman correlation went from ~0.38 to ~0.51 on summarization tasks.
 
 The key is that reasoning must come before the score, not after. If the model outputs the score first and then explains, the explanation is just post-hoc rationalization. If it reasons first and then scores, the reasoning actually influences the judgment.
 
@@ -222,11 +216,11 @@ What techniques are you using for LLM consistency? Have you run into the same is
 
 References:
 
-[1] Zheng et al. ["Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena."](https://arxiv.org/abs/2306.05685) NeurIPS 2023.
-[2] Wang et al. ["Self-Consistency Improves Chain of Thought Reasoning in Language Models."](https://arxiv.org/abs/2203.11171) ICLR 2023.
-[3] Liu et al. ["G-Eval: NLG Evaluation using GPT-4 with Chain-of-Thought and a Form-Filling Paradigm."](https://arxiv.org/abs/2303.16634) 2023.
-[4] Kim et al. ["Prometheus: Inducing Fine-Grained Evaluation Capability in Language Models."](https://arxiv.org/abs/2310.08491) ICLR 2024.
-[5] Wang et al. ["Large Language Models are not Fair Evaluators."](https://arxiv.org/abs/2305.17926) ACL 2024.
-[6] Chan et al. ["ChatEval: Towards Better LLM-based Evaluators through Multi-Agent Debate."](https://arxiv.org/abs/2308.07201) 2023.
-[7] Wallace et al. ["The Instruction Hierarchy: Training LLMs to Prioritize Privileged Instructions."](https://arxiv.org/abs/2404.13208) OpenAI, 2024.
-[8] ["Text Generation — Seed Parameter."](https://platform.openai.com/docs/guides/text-generation) OpenAI.
+[1] Zheng et al. ["Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena."](https://arxiv.org/abs/2306.05685) NeurIPS 2023.  
+[2] Wang et al. ["Self-Consistency Improves Chain of Thought Reasoning in Language Models."](https://arxiv.org/abs/2203.11171) ICLR 2023.  
+[3] Liu et al. ["G-Eval: NLG Evaluation using GPT-4 with Chain-of-Thought and a Form-Filling Paradigm."](https://arxiv.org/abs/2303.16634) 2023.  
+[4] Kim et al. ["Prometheus: Inducing Fine-Grained Evaluation Capability in Language Models."](https://arxiv.org/abs/2310.08491) ICLR 2024.  
+[5] Wang et al. ["Large Language Models are not Fair Evaluators."](https://arxiv.org/abs/2305.17926) ACL 2024.  
+[6] Chan et al. ["ChatEval: Towards Better LLM-based Evaluators through Multi-Agent Debate."](https://arxiv.org/abs/2308.07201) 2023.  
+[7] Wallace et al. ["The Instruction Hierarchy: Training LLMs to Prioritize Privileged Instructions."](https://arxiv.org/abs/2404.13208) OpenAI, 2024.  
+[8] ["Text Generation — Seed Parameter."](https://platform.openai.com/docs/guides/text-generation) OpenAI.  
