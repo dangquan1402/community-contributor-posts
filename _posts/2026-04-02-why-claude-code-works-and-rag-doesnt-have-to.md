@@ -11,15 +11,25 @@ I've spent the past year and a half building LLM-powered applications, from earl
 Here's the journey at a glance:
 
 <pre class="mermaid">
-graph LR
-    A["RAG with Embeddings -- Chunking + Vector Search"] --> B["Hybrid Retrieval -- Embedding + BM25"]
-    B --> C["Two-Pass Filtering -- Top-N then LLM rerank"]
-    C --> D["Agentic Search -- ReAct + grep tools"]
-
-    style A fill:#e76f51,stroke:#e76f51,color:#fff
-    style B fill:#f4a261,stroke:#f4a261,color:#000
-    style C fill:#e9c46a,stroke:#e9c46a,color:#000
-    style D fill:#2a9d8f,stroke:#2a9d8f,color:#fff
+timeline
+    title From RAG to Agentic Search
+    section Embedding Era
+        Early 2024 : RAG with Embeddings
+                   : Chunking + Vector Search
+                   : Azure Document Intelligence
+                   : AWS Textract
+        Mid 2024 : Hybrid Retrieval
+                 : Embedding + BM25
+                 : Query Transformation
+    section Optimization
+        Late 2024 : Two-Pass Filtering
+                  : Top-100 then LLM rerank
+                  : Patching a lossy step
+    section Agentic Era
+        2025 : Agentic Search
+             : ReAct + grep tools
+             : No embeddings needed
+             : Inspired by Claude Code
 </pre>
 
 I started with chat-with-file systems, mostly PDFs. Embedding-based retrieval felt like the obvious approach. It was meant to solve two fundamental LLM limitations: context length and the needle-in-a-haystack problem.

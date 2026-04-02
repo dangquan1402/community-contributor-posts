@@ -37,7 +37,33 @@ graph TD
     style D fill:#d8f3dc,stroke:#74c69d,color:#000
 ```
 
-The cost impact over multiple requests looks like this:
+Here's when each provider launched:
+
+```mermaid
+timeline
+    title Prompt Caching Timeline
+    section Google
+        Jun 2024 : Context Caching for Gemini
+                 : Explicit cached resource
+                 : Min 32,768 tokens
+                 : Configurable TTL (default 1hr)
+                 : Storage cost per hour
+    section Anthropic
+        Aug 2024 : Prompt Caching
+                 : Manual cache_control breakpoints
+                 : Min 1,024 tokens
+                 : 5-min TTL (refreshes on hit)
+                 : 90% read discount
+                 : 25% write surcharge
+    section OpenAI
+        Oct 2024 : Automatic Prompt Caching
+                 : Zero configuration
+                 : Min 1,024 tokens
+                 : 50% read discount
+                 : No write surcharge
+```
+
+The cost impact over multiple requests:
 
 ```mermaid
 graph LR

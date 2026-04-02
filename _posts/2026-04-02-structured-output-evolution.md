@@ -13,15 +13,33 @@ At the beginning, the answer was no. Not natively. So we hacked around it. We in
 Then OpenAI changed the game. Here's how the evolution unfolded:
 
 <pre class="mermaid">
-graph LR
-    A["Prompt Hacking -- Please return JSON"] --> B["Function Calling -- Jun 2023"]
-    B --> C["JSON Mode -- Nov 2023"]
-    C --> D["Structured Outputs -- Aug 2024"]
-
-    style A fill:#e76f51,stroke:#e76f51,color:#fff
-    style B fill:#f4a261,stroke:#f4a261,color:#000
-    style C fill:#e9c46a,stroke:#e9c46a,color:#000
-    style D fill:#2a9d8f,stroke:#2a9d8f,color:#fff
+timeline
+    title Structured Output Evolution
+    section The Hack Era
+        Pre-2023 : Prompt Hacking
+                 : "Please return JSON" and pray
+                 : Manual parsing with regex
+    section Function Calling
+        Jun 2023 : OpenAI Function Calling
+                 : GPT-3.5 and GPT-4
+                 : JSON Schema for parameters
+                 : Best-effort compliance
+        Oct 2023 : Tools API replaces Functions
+                 : Parallel function calling
+        Dec 2023 : Google Gemini Function Calling
+    section JSON Mode
+        Nov 2023 : OpenAI JSON Mode
+                 : GPT-4 Turbo
+                 : Guaranteed valid JSON
+                 : No schema enforcement
+    section Structured Outputs
+        Apr 2024 : Anthropic Tool Use GA
+                 : Claude 3 family
+                 : Forced tool use for schemas
+        Aug 2024 : OpenAI Structured Outputs
+                 : GPT-4o strict mode
+                 : Constrained decoding
+                 : Guaranteed schema compliance
 </pre>
 
 | Feature | Prompt Hack | Function Calling | JSON Mode | Structured Outputs |
