@@ -20,7 +20,8 @@ Each post has 3 versions:
 - Include code snippets (pseudo-code or real) where they clarify a concept
 - Each reference line must end with two trailing spaces for markdown line breaks
 - Each post should end with a discussion question
-- LinkedIn version should link to the full version on GitHub
+- LinkedIn version should link to the full post on GitHub Pages (not the GitHub repo)
+  - URL pattern: `https://dangquan1402.github.io/community-contributor-posts/YYYY/MM/DD/<slug>.html`
 
 ## Jekyll Post Structure
 
@@ -127,8 +128,19 @@ Use `/mermaid-review` to review and improve diagrams in a post.
   - Dark: `fill:#264653` (neutral/start)
   - Green gradients (dark→light) for stability/priority spectrums
 
+## LinkedIn Carousels
+
+PDF carousels for LinkedIn posts are generated from `carousels/` directory:
+- `carousel_base.py` — reusable base class (white background, teal accents, tables, bullets, stat boxes)
+- `NNN_slug.py` — per-post slide definitions + mermaid rendering
+- `output/` — generated PDFs (gitignored)
+- Run: `cd carousels && python3 NNN_slug.py`
+- Specs: 1080×1080 square, 6-9 slides, PDF under 3 MB
+- CTA slide links to GitHub Pages URL (not GitHub repo)
+
 ## GitHub Pages
 
 - Theme: minima
 - Mermaid support: loaded via CDN in `_includes/mermaid.html`, included in `_layouts/post.html`
 - URL: https://dangquan1402.github.io/community-contributor-posts/
+- Post URL pattern: `https://dangquan1402.github.io/community-contributor-posts/YYYY/MM/DD/<slug>.html`

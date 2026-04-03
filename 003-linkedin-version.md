@@ -23,4 +23,4 @@ The takeaway: prompt architecture matters for production. Keep system prompts st
 
 Most people think about prompt engineering as what to say. But where you put it is just as important for cost and performance.
 
-Full version: github.com/dangquan1402/community-contributor-posts
+Full post: https://dangquan1402.github.io/community-contributor-posts/2026/04/02/prompt-caching-layer.html
