@@ -136,6 +136,57 @@ This is the fundamental tension: GraphRAG converts unstructured data into struct
 
 ---
 
+## What About Knowledge Graphs for Source Code?
+
+There's another place where knowledge graphs have been proposed recently: source code. Projects like [CodexGraph (Liu et al., 2024) [9]](https://arxiv.org/abs/2408.13689) and [GraphCoder [10]](https://arxiv.org/abs/2404.04862) build knowledge graphs from codebases — extracting entities like functions, classes, and modules, with edges for calls, imports, inheritance, and type relationships — then use graph retrieval to give LLMs better repository-level context.
+
+The idea sounds appealing: code is full of relationships, and understanding a function often means understanding what it calls, what calls it, and what types it uses. A knowledge graph could capture all of that.
+
+But here's my issue: code is already structured data. Unlike natural language documents, source code has a formal grammar. We already have tools that parse it perfectly:
+
+| Tool | What it provides | Maintenance cost |
+|---|---|---|
+| AST (tree-sitter) | Complete syntactic structure of every file | Zero — deterministic parse |
+| LSP | Go-to-definition, find-references, call hierarchy, type info | Zero — runs on-demand from source |
+| Package managers | Dependency graphs (pip, npm, cargo) | Zero — reads lockfiles |
+| CodeQL / Semgrep | Data flow, taint tracking, control flow graphs | Near-zero — static analysis |
+
+These tools give you the exact same entities and relations that a code knowledge graph would extract — functions, classes, call graphs, import chains, type hierarchies — but with perfect accuracy, zero LLM cost, and no maintenance burden. An AST is a lossless representation of code structure. An LLM-extracted knowledge graph is a lossy, probabilistic approximation of the same thing.
+
+Claude Code's [LSP integration [11]](https://docs.anthropic.com/en/docs/claude-code/overview) is a good example: it can jump to definitions, find all references, and traverse call hierarchies in real time, directly from the source. No graph database, no entity extraction pipeline, no community detection. Just the language server doing what it was designed to do.
+
+<pre class="mermaid">
+graph LR
+    CODE["Source Code"] --> AST["AST\n(tree-sitter)"]
+    CODE --> LSP["LSP\n(definitions, refs)"]
+    CODE --> DEP["Dependency\nGraph"]
+    CODE --> SA["Static Analysis\n(CodeQL)"]
+
+    KG_APPROACH["LLM-Extracted\nCode KG"]
+
+    AST -->|"lossless, free"| SAME["Same Relations"]
+    LSP -->|"real-time, free"| SAME
+    DEP -->|"exact, free"| SAME
+    SA -->|"precise, free"| SAME
+    KG_APPROACH -->|"lossy, $$$"| SAME
+
+    style CODE fill:#264653,stroke:#264653,color:#fff
+    style AST fill:#2a9d8f,stroke:#2a9d8f,color:#fff
+    style LSP fill:#2a9d8f,stroke:#2a9d8f,color:#fff
+    style DEP fill:#2a9d8f,stroke:#2a9d8f,color:#fff
+    style SA fill:#2a9d8f,stroke:#2a9d8f,color:#fff
+    style KG_APPROACH fill:#e76f51,stroke:#e76f51,color:#fff
+    style SAME fill:#e9c46a,stroke:#e9c46a,color:#000
+</pre>
+
+And the maintenance problem is even worse for code than for documents. Codebases change constantly — every commit modifies functions, adds files, changes call patterns. If maintaining a knowledge graph for a slowly-changing document corpus is already painful, imagine maintaining one for a codebase with dozens of commits per day. Every refactor, every rename, every new dependency would require re-extraction and re-resolution.
+
+The one argument for code KGs is cross-repository or cross-language reasoning — "which services depend on this shared library?" or "how does the Python backend connect to the TypeScript frontend?" LSP doesn't cross language boundaries, and package managers don't trace internal function calls across repos. But even here, tools like [Sourcegraph [12]](https://sourcegraph.com/) solve this with [SCIP-based code intelligence [13]](https://about.sourcegraph.com/blog/announcing-scip) — deterministic, not probabilistic.
+
+My take: knowledge graphs make sense when you're dealing with unstructured data that has no inherent structure. Documents, research papers, news articles — these genuinely benefit from having structure imposed on them. But code already has structure. Building a knowledge graph on top of code is building a lossy approximation of something you can already access losslessly. It's solving a problem that's already solved.
+
+---
+
 ## When to Use GraphRAG
 
 | Scenario | Recommendation | Why |
@@ -166,3 +217,8 @@ References:
 [6] ["GraphRAG."](https://github.com/microsoft/graphrag) Microsoft GitHub.  
 [7] Banerjee, P. et al. ["Incremental Community Detection in Distributed Dynamic Graph."](https://arxiv.org/abs/2305.14938) arXiv 2023.  
 [8] Chuang, Y. et al. ["Streaming Knowledge Graph Construction."](https://arxiv.org/abs/2310.11952) arXiv 2023.  
+[9] Liu et al. ["CodexGraph: Bridging Large Language Models and Code Repositories via Code Graph Databases."](https://arxiv.org/abs/2408.13689) arXiv 2024.  
+[10] Liu et al. ["GraphCoder: Enhancing Repository-Level Code Completion via Code Context Graph-based Retrieval and Language Model."](https://arxiv.org/abs/2404.04862) arXiv 2024.  
+[11] ["Claude Code Overview."](https://docs.anthropic.com/en/docs/claude-code/overview) Anthropic.  
+[12] ["Sourcegraph — Code Intelligence Platform."](https://sourcegraph.com/) Sourcegraph.  
+[13] ["Announcing SCIP — a better code indexing format."](https://about.sourcegraph.com/blog/announcing-scip) Sourcegraph Blog.  

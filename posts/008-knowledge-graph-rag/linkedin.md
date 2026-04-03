@@ -8,20 +8,30 @@ GraphRAG (Edge et al., 2024) fixes this: build a knowledge graph from your corpu
 
 But here's what the benchmarks don't show: the construction pipeline.
 
-→ Entity extraction: LLM reads every chunk. ~$30 for 2K articles with GPT-4o.
-→ Entity resolution: "Silicon Valley Bank" vs "SVB" vs "Silicon_Valley_Bank". Multi-step dedup pipeline, still has failure modes.
-→ Community detection: Leiden algorithm, needs Neo4j + GDS plugin.
-→ Community summarization: LLM summarizes each community. Potentially thousands of calls. Total: ~281 min for ~1M tokens.
+→ Entity extraction: LLM reads every chunk. ~$30 for 2K articles with GPT-4o
+→ Entity resolution: "Silicon Valley Bank" vs "SVB" — multi-step dedup, still has failure modes
+→ Community detection + summarization: potentially thousands of LLM calls. Total: ~281 min for ~1M tokens
 
 And that's just initial construction.
 
-The real problem is maintenance. Adding new documents means re-extracting entities, resolving against the existing graph, re-running link prediction, entity dedup on the full graph, re-detecting communities, and re-summarizing (which cascades through the hierarchy).
+The real problem is maintenance. Adding new documents means re-extracting entities, resolving against the existing graph, re-running link prediction, entity dedup, re-detecting communities, and re-summarizing (cascades through the hierarchy).
 
-With vector RAG, adding a document = chunk, embed, append. With GraphRAG, adding a document = potentially restructuring your entire knowledge representation.
+With vector RAG, adding a document = chunk, embed, append. With GraphRAG = potentially restructuring your entire knowledge representation.
+
+And then there's the trend of applying knowledge graphs to source code. Projects like CodexGraph and GraphCoder build KGs from codebases — functions, classes, call graphs, imports — to give LLMs better context.
+
+But code is already structured data. We already have tools that give us the exact same relations:
+
+→ AST (tree-sitter): complete syntactic structure, lossless, free
+→ LSP: go-to-definition, find-references, call hierarchy — real-time, free
+→ Package managers: dependency graphs, free
+→ CodeQL/Semgrep: data flow, taint tracking, free
+
+An LLM-extracted code KG is a lossy, expensive approximation of what these tools provide losslessly. And codebases change with every commit — the maintenance problem is even worse than for documents.
+
+Knowledge graphs make sense for unstructured data with no inherent structure. Code already has structure. Building a KG on top is solving a problem that's already solved.
 
 My take: if you already have a curated knowledge graph, absolutely use it. If you need to build one from scratch, think carefully about whether maintenance cost justifies the improvement. The benchmarks are real, but benchmarks run on static datasets. Production systems don't stay static.
-
-The future is incremental graph updates — adding knowledge without full restructuring. Until that's solved, GraphRAG is best for corpora that change infrequently and are queried frequently with global, thematic questions.
 
 What's your experience with knowledge graphs in production?
 
