@@ -4,9 +4,10 @@ A collection of LinkedIn posts discussing lessons learned from building LLM-powe
 
 ## Structure
 
-Each post has 3 versions:
+Each post has 4 versions:
 - `NNN-<slug>.md` — full version (renders on GitHub with mermaid support)
 - `NNN-linkedin-version.md` — short version for LinkedIn (under 3,000 chars)
+- `NNN-x-thread.md` — X/Twitter thread version (4-8 tweets, 280 chars each)
 - `_posts/YYYY-MM-DD-<slug>.md` — Jekyll version for GitHub Pages (uses `<pre class="mermaid">` for diagrams)
 
 ## Writing Conventions
@@ -74,7 +75,18 @@ In-body text, use inline author-date citations linked directly:
 The [Prometheus paper (Kim et al., ICLR 2024)](https://arxiv.org/abs/2310.08491) showed that...
 ```
 
-For LinkedIn versions, references are not needed — link to the full version instead.
+For LinkedIn versions, references are not needed — link to the full post on GitHub Pages instead.
+
+## X/Twitter Thread Format
+
+Each post gets an X thread version (`NNN-x-thread.md`):
+- 4-8 tweets, each under 280 characters
+- Tweet 1: hook — why should I care
+- Tweets 2-6: one key insight per tweet, concrete numbers/examples
+- Last tweet: CTA link to GitHub Pages + 2-3 hashtags
+- Format: `1/N` numbering at the start of each tweet
+- Keep it conversational, use line breaks, no walls of text
+- Arrows (`→`) for bullet points within tweets
 
 ## Code Snippets
 
