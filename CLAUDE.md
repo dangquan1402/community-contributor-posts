@@ -4,11 +4,16 @@ A collection of LinkedIn posts discussing lessons learned from building LLM-powe
 
 ## Structure
 
-Each post has 4 versions:
-- `NNN-<slug>.md` — full version (renders on GitHub with mermaid support)
-- `NNN-linkedin-version.md` — short version for LinkedIn (under 3,000 chars)
-- `NNN-x-thread.md` — X/Twitter thread version (4-8 tweets, 280 chars each)
-- `_posts/YYYY-MM-DD-<slug>.md` — Jekyll version for GitHub Pages (uses `<pre class="mermaid">` for diagrams)
+Each post lives in `posts/NNN-<slug>/` with 3 platform versions, plus a Jekyll version:
+
+```
+posts/NNN-<slug>/
+  post.md          — full version (renders on GitHub with mermaid support)
+  linkedin.md      — short version for LinkedIn (under 3,000 chars)
+  x-thread.md      — X/Twitter thread (4-8 tweets, 280 chars each)
+
+_posts/YYYY-MM-DD-<slug>.md  — Jekyll version for GitHub Pages
+```
 
 ## Writing Conventions
 

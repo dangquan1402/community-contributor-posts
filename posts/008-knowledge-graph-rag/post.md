@@ -1,0 +1,149 @@
+Knowledge Graph RAG — The Promise of Structured Retrieval and the Hidden Cost of Building It
+
+My thesis was on knowledge graph embeddings, so when GraphRAG started trending I was genuinely excited. Finally, knowledge graphs getting the attention they deserve in the LLM era. But having lived in that world, I also know what people aren't talking about: the cost of actually building and maintaining a knowledge graph from scratch.
+
+Let me start with the basics. A knowledge graph is a graph where nodes are entities and edges are relations between them. The canonical example is a triple: (Albert Einstein, bornIn, Ulm). Millions of these triples form a structured representation of knowledge — Wikidata has over 100 billion triples. The key property is that knowledge is explicit and traversable. You can follow links, reason over paths, and answer multi-hop questions that would be impossible with flat text.
+
+```mermaid
+graph LR
+    E["Einstein"] -->|bornIn| U["Ulm"]
+    E -->|field| P["Physics"]
+    E -->|won| NP["Nobel Prize 1921"]
+    NP -->|category| P
+    U -->|country| DE["Germany"]
+
+    style E fill:#264653,stroke:#264653,color:#fff
+    style U fill:#2a9d8f,stroke:#2a9d8f,color:#fff
+    style P fill:#e9c46a,stroke:#e9c46a,color:#000
+    style NP fill:#f4a261,stroke:#f4a261,color:#000
+    style DE fill:#2d6a4f,stroke:#2d6a4f,color:#fff
+```
+
+Traditional RAG works like this: chunk documents, embed them into vectors, retrieve the top-k most similar chunks for a query. It works well for factual lookups — "what does this API return?" or "what's the refund policy?" But it falls apart on questions that require synthesizing information across many documents. Try asking "what are the main themes in this dataset?" or "how are these companies connected?" — vector similarity doesn't help because no single chunk contains the answer.
+
+This is exactly what [GraphRAG (Edge et al., 2024) [1]](https://arxiv.org/abs/2404.16130) addresses. The core idea: build a knowledge graph from your corpus, detect communities of related entities using the [Leiden algorithm [3]](https://arxiv.org/abs/1810.08473), generate summaries for each community, then use those summaries to answer global questions via map-reduce.
+
+```mermaid
+graph LR
+    DOC["Documents"] --> CHUNK["Chunk"]
+    CHUNK --> EXT["Extract Entities"]
+    EXT --> KG["Knowledge Graph"]
+    KG --> COM["Detect Communities"]
+    COM --> SUM["Summarize Communities"]
+    SUM --> QA["Map-Reduce QA"]
+
+    style DOC fill:#264653,stroke:#264653,color:#fff
+    style CHUNK fill:#e76f51,stroke:#e76f51,color:#fff
+    style EXT fill:#f4a261,stroke:#f4a261,color:#000
+    style KG fill:#e9c46a,stroke:#e9c46a,color:#000
+    style COM fill:#2a9d8f,stroke:#2a9d8f,color:#fff
+    style SUM fill:#40916c,stroke:#40916c,color:#fff
+    style QA fill:#2d6a4f,stroke:#2d6a4f,color:#fff
+```
+
+The results are compelling. On their benchmarks (~1M token datasets), GraphRAG outperformed vector RAG on comprehensiveness (72-83% win rate) and diversity (62-82% win rate) using LLM-as-judge evaluation. Vector RAG still won on directness — it gives more concise, pointed answers for specific questions. This makes sense: vector RAG is great at finding the needle, GraphRAG is great at describing the haystack.
+
+| Metric | GraphRAG vs Vector RAG | What it means |
+|---|---|---|
+| Comprehensiveness | 72-83% win | Covers more aspects of the answer |
+| Diversity | 62-82% win | Provides more varied perspectives |
+| Directness | Vector RAG wins | More concise for specific questions |
+| Empowerment | Mixed | Depends on whether quotes or summaries help more |
+
+So if GraphRAG is so much better for global questions, why isn't everyone using it? Because the pipeline to build and maintain the knowledge graph is where the real complexity lives.
+
+
+Here's what it actually takes to go from documents to a usable knowledge graph:
+
+Step 1: Entity and Relationship Extraction. An LLM reads every chunk and extracts entities and their relationships. The [Neo4j implementation [2]](https://neo4j.com/blog/developer/global-graphrag-neo4j-langchain/) using LangChain's `LLMGraphTransformer` with GPT-4o extracted ~13,000 entities and ~16,000 relationships from 2,000 news articles. Cost: ~$30, time: ~35 minutes with 10 parallel workers. And this is a small dataset.
+
+```python
+# LangChain's LLMGraphTransformer — simplified
+from langchain_experimental.graph_transformers import LLMGraphTransformer
+
+transformer = LLMGraphTransformer(llm=ChatOpenAI(model="gpt-4o"))
+graph_documents = transformer.convert_to_graph_documents(documents)
+# Each document → nodes (entities) + relationships (edges)
+```
+
+Step 2: Entity Resolution. This is the step the original paper mentions but doesn't ship code for — and it's arguably the hardest. The same entity appears with different names: "Silicon Valley Bank", "Silicon_Valley_Bank", "SVB". You need to deduplicate them. The Neo4j blog's approach: compute text embeddings → build a KNN graph (cosine similarity > 0.95) → find connected components → filter by edit distance → LLM verification for final merge decisions. Even with all that, it still has failure modes for dates, abbreviations, and domain-specific terms.
+
+Step 3: Community Detection. Run the Leiden algorithm to partition the graph into hierarchical communities — clusters of closely related entities. The paper's podcast dataset produced communities ranging from 34 (coarsest) to 1,310 (finest). Not every level adds meaningful information — the Neo4j blog found levels 3 and 4 differed by only 4 communities.
+
+Step 4: Community Summarization. An LLM generates natural language summaries for each community, bottom-up through the hierarchy. That's potentially thousands of LLM calls. The paper's indexing step took 281 minutes for ~1M tokens of source documents.
+
+| Pipeline Step | What it does | Cost/Complexity |
+|---|---|---|
+| Entity Extraction | LLM reads every chunk | ~$30 for 2K articles (GPT-4o) |
+| Entity Resolution | Deduplicate entities | Multi-step pipeline, domain-dependent |
+| Community Detection | Cluster related entities | Needs graph DB (Neo4j + GDS plugin) |
+| Community Summarization | LLM summarizes each community | Potentially thousands of LLM calls |
+| Total indexing time | End to end | ~281 min for ~1M tokens (paper) |
+
+
+Now here's the part that doesn't get enough attention: what happens when your knowledge changes?
+
+If you have a fixed, curated knowledge graph — like Wikidata or a domain-specific ontology that rarely changes — GraphRAG works beautifully. The graph is your ground truth, you run community detection once, generate summaries, and you're done. Query-time is efficient: root-level community summaries use 9-43x fewer tokens than processing raw text.
+
+But if you're building the knowledge graph from your own documents — which is the whole point of GraphRAG for most use cases — every update is painful:
+
+Adding new documents means re-extracting entities, but now you need to resolve them against the existing graph. Is "OpenAI" in the new document the same "OpenAI" already in the graph? Probably yes, but what about "GPT-5" vs "GPT 5" vs "the new GPT model"? Every new entity needs link prediction against the full graph — will it connect to existing nodes, or form its own cluster?
+
+Entity deduplication gets harder as the graph grows. With 13,000 entities, pairwise comparison is already expensive. At 100K+ entities, you need approximate methods (LSH, blocking strategies), and each one introduces its own failure modes.
+
+Community structure shifts. Adding a few hundred nodes can completely reorganize communities, invalidating your existing summaries. Do you re-run Leiden on the full graph? Only on affected subgraphs? How do you even define "affected"?
+
+Summary staleness. Even if you detect which communities changed, regenerating summaries means more LLM calls. And if higher-level summaries depend on lower-level ones (they do — the paper uses bottom-up summarization), a change at the leaf level can cascade through the entire hierarchy.
+
+```mermaid
+graph LR
+    NEW["New Documents"] --> EXT["Re-extract Entities"]
+    EXT --> RES["Resolve Against\nExisting Graph"]
+    RES --> LINK["Link Prediction"]
+    LINK --> DEDUP["Entity Dedup\n(full graph)"]
+    DEDUP --> RECOM["Re-detect\nCommunities"]
+    RECOM --> RESUM["Re-summarize\n(cascade)"]
+
+    style NEW fill:#e76f51,stroke:#e76f51,color:#fff
+    style EXT fill:#f4a261,stroke:#f4a261,color:#000
+    style RES fill:#e9c46a,stroke:#e9c46a,color:#000
+    style LINK fill:#e9c46a,stroke:#e9c46a,color:#000
+    style DEDUP fill:#f4a261,stroke:#f4a261,color:#000
+    style RECOM fill:#e76f51,stroke:#e76f51,color:#fff
+    style RESUM fill:#e76f51,stroke:#e76f51,color:#fff
+```
+
+This is the fundamental tension: GraphRAG converts unstructured data into structured data, and structured data is harder to update than unstructured data. With vector RAG, adding a new document is trivial — chunk it, embed it, append to the index. With GraphRAG, adding a new document means potentially restructuring your entire knowledge representation.
+
+
+So when should you actually use GraphRAG?
+
+| Scenario | Recommendation | Why |
+|---|---|---|
+| Static knowledge base, global queries | GraphRAG | Upfront cost amortized, global queries excel |
+| Rapidly changing documents | Vector RAG | Update cost too high for GraphRAG |
+| Specific factual lookups | Vector RAG | No need for global synthesis |
+| Existing curated KG (Wikidata, domain ontology) | KG-augmented RAG | Skip the construction step entirely |
+| Mixed: some global, some specific | Hybrid | Vector for specific, graph for thematic |
+
+The honest answer for most teams: if you already have a knowledge graph, absolutely use it for retrieval. If you need to build one from scratch for GraphRAG, think very carefully about whether the maintenance cost is worth the improvement over vector RAG. The benchmarks are real — GraphRAG genuinely outperforms on global questions. But benchmarks run on static datasets. Production systems don't stay static.
+
+Tools like [LangChain's LLMGraphTransformer [4]](https://python.langchain.com/docs/how_to/graph_constructing/), [Neo4j [5]](https://neo4j.com/), and [Microsoft's GraphRAG library [6]](https://github.com/microsoft/graphrag) have made the initial construction more accessible. But accessible construction doesn't mean accessible maintenance. The extraction-resolution-detection-summarization pipeline runs once to build, and then again (partially or fully) every time your knowledge changes.
+
+My take: the future of GraphRAG is in incremental graph updates — methods that can add new knowledge without restructuring the entire graph. Some work is happening here ([incremental community detection [7]](https://arxiv.org/abs/2305.14938), [streaming knowledge graph construction [8]](https://arxiv.org/abs/2310.11952)), but it's still early. Until incremental updates are solved, GraphRAG is best suited for corpora that change infrequently and are queried frequently with global, thematic questions.
+
+For the rest of us dealing with living, breathing document collections — traditional RAG with good chunking strategies is still the pragmatic choice. Not because it's better at global questions (it isn't), but because it's the only approach where the maintenance cost doesn't scale with the complexity of your knowledge.
+
+What's your experience with knowledge graphs in production? Are you building them from scratch or leveraging existing ones?
+
+
+References:
+
+[1] Edge et al. ["From Local to Global: A Graph RAG Approach to Query-Focused Summarization."](https://arxiv.org/abs/2404.16130) arXiv 2024.  
+[2] Bratanic, T. ["Implementing 'From Local to Global' GraphRAG with Neo4j and LangChain."](https://neo4j.com/blog/developer/global-graphrag-neo4j-langchain/) Neo4j Blog 2024.  
+[3] Traag, V. A. et al. ["From Louvain to Leiden: guaranteeing well-connected communities."](https://arxiv.org/abs/1810.08473) Scientific Reports 2019.  
+[4] ["How to construct knowledge graphs."](https://python.langchain.com/docs/how_to/graph_constructing/) LangChain Documentation.  
+[5] ["Neo4j Graph Database."](https://neo4j.com/) Neo4j.  
+[6] ["GraphRAG."](https://github.com/microsoft/graphrag) Microsoft GitHub.  
+[7] Banerjee, P. et al. ["Incremental Community Detection in Distributed Dynamic Graph."](https://arxiv.org/abs/2305.14938) arXiv 2023.  
+[8] Chuang, Y. et al. ["Streaming Knowledge Graph Construction."](https://arxiv.org/abs/2310.11952) arXiv 2023.  
