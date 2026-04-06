@@ -18,4 +18,4 @@ Don't start with the most complex architecture. Start with a capable model, give
 
 What's your experience? Have you moved from RAG toward agentic approaches?
 
-Full post: https://dangquan1402.github.io/community-contributor-posts/2026/04/02/why-claude-code-works-and-rag-doesnt-have-to.html
+Full post: https://dangquan1402.github.io/llm-engineering-notes/2026/04/02/why-claude-code-works-and-rag-doesnt-have-to.html

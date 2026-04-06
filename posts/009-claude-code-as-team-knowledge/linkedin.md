@@ -22,4 +22,4 @@ The new dev who joins your team doesn't just get a stale wiki page. They get a w
 
 The coding assistant isn't just a tool. It's a forcing function for the practices you already know you should have.
 
-Full post: https://dangquan1402.github.io/community-contributor-posts/2026/04/03/claude-code-as-team-knowledge.html
+Full post: https://dangquan1402.github.io/llm-engineering-notes/2026/04/03/claude-code-as-team-knowledge.html

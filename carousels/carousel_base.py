@@ -44,6 +44,14 @@ class CarouselPDF(FPDF):
         self.multi_cell(CONTENT_W, size * 1.5, text, align="L")
         return self.get_y()
 
+    def link_text(self, y, text, url, size=32, color=ACCENT):
+        """Render clickable link text."""
+        self.set_font("Inter", "B", size)
+        self.set_text_color(*color)
+        self.set_xy(MARGIN, y)
+        self.cell(CONTENT_W, size * 1.5, text, link=url, align="L")
+        return y + size * 1.5 + 10
+
     def accent_line(self, y, width=120):
         self.set_fill_color(*ACCENT)
         self.rect(MARGIN, y, width, 4, "F")

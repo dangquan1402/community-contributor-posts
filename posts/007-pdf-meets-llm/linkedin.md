@@ -30,4 +30,4 @@ The naive image→LLM approach does OCR and reasoning in one shot. When it fails
 
 Key insight: Anthropic charges for text extraction AND image conversion per page. A 50-page doc can consume 75K-150K tokens just in context. OpenAI uses tile-based pricing (~765 tokens/page). Gemini uses fixed per-page tokens — cheapest by design.
 
-Full post: https://dangquan1402.github.io/community-contributor-posts/2026/04/02/pdf-meets-llm.html
+Full post: https://dangquan1402.github.io/llm-engineering-notes/2026/04/02/pdf-meets-llm.html

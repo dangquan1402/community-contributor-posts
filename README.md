@@ -1,8 +1,8 @@
-# Community Contributor Posts
+# LLM Engineering Notes
 
-Open discussions and reflections on working with LLMs — shared on [LinkedIn](https://www.linkedin.com/) and [X/Twitter](https://x.com/).
+Practical notes on building LLM-powered applications — shared on [LinkedIn](https://www.linkedin.com/in/quandang13/) and [X/Twitter](https://x.com/).
 
-Blog: [dangquan1402.github.io/community-contributor-posts](https://dangquan1402.github.io/community-contributor-posts/)
+Blog: [dangquan1402.github.io/llm-engineering-notes](https://dangquan1402.github.io/llm-engineering-notes/)
 
 ## Posts
 

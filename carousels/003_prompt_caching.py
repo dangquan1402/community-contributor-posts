@@ -4,7 +4,7 @@
 import os
 import subprocess
 import tempfile
-from carousel_base import CarouselPDF, ACCENT, ORANGE, TEXT, TEXT_LIGHT, CONTENT_W
+from carousel_base import CarouselPDF, ORANGE, TEXT, CONTENT_W
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_DIR = os.path.join(SCRIPT_DIR, "output")
@@ -199,7 +199,8 @@ y = pdf.title_text(y, "Full post with code\nexamples and API details", size=44)
 y += 30
 y = pdf.accent_line(y, width=CONTENT_W)
 y += 20
-y = pdf.body_text(y, "dangquan1402.github.io/\ncommunity-contributor-posts", size=36, color=TEXT)
+y = pdf.link_text(y, "dangquan1402.github.io/llm-engineering-notes",
+    "https://dangquan1402.github.io/llm-engineering-notes/2026/04/02/prompt-caching-layer.html")
 y += 40
 y = pdf.body_text(y, "Are you using prompt caching in production?\nI'd love to hear how it's affected your costs.", size=30)
 pdf.footer_text("Dquan's LLM Notes  |  @quandang")

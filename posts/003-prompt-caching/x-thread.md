@@ -53,6 +53,6 @@ Google (Jun 2024):
 Most devs think about what to say in a prompt. How you structure it matters just as much for cost and latency.
 
 Full post with code examples and pricing tables:
-dangquan1402.github.io/community-contributor-posts/2026/04/02/prompt-caching-layer.html
+dangquan1402.github.io/llm-engineering-notes/2026/04/02/prompt-caching-layer.html
 
 #LLM #PromptEngineering #AI

@@ -45,6 +45,6 @@ Clean, focused, works across providers.
 The ecosystem converged on Pydantic for schema definition. Write Python, get structured output. Stop writing regex parsers.
 
 Full post with code examples and comparison tables:
-dangquan1402.github.io/community-contributor-posts/2026/04/02/structured-output-evolution.html
+dangquan1402.github.io/llm-engineering-notes/2026/04/02/structured-output-evolution.html
 
 #LLM #StructuredOutput #AI

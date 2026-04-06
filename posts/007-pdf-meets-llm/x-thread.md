@@ -49,6 +49,6 @@ Hidden pricing trap with multimodal:
 Don't send images to LLMs when OCR + LLM gives you accuracy AND debuggability at lower cost.
 
 Full post with pricing tables and benchmarks:
-dangquan1402.github.io/community-contributor-posts/2026/04/02/pdf-meets-llm.html
+dangquan1402.github.io/llm-engineering-notes/2026/04/02/pdf-meets-llm.html
 
 #LLM #DocumentAI #AI

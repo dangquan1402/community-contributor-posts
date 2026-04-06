@@ -35,4 +35,4 @@ My take: if you already have a curated knowledge graph, absolutely use it. If yo
 
 What's your experience with knowledge graphs in production?
 
-Full post: https://dangquan1402.github.io/community-contributor-posts/2026/04/03/knowledge-graph-rag.html
+Full post: https://dangquan1402.github.io/llm-engineering-notes/2026/04/03/knowledge-graph-rag.html

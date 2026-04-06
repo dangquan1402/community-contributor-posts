@@ -24,4 +24,4 @@ When to still use Celery: CPU-heavy work (image processing, ML training), comple
 
 The LLM ecosystem is I/O-bound by nature. Your tools should reflect that.
 
-Full post: https://dangquan1402.github.io/community-contributor-posts/2026/04/02/lightweight-task-queues-for-llm-apps.html
+Full post: https://dangquan1402.github.io/llm-engineering-notes/2026/04/02/lightweight-task-queues-for-llm-apps.html

@@ -1,6 +1,6 @@
-# Community Contributor Posts
+# LLM Engineering Notes
 
-A collection of LinkedIn posts discussing lessons learned from building LLM-powered applications.
+Practical notes on building LLM-powered applications — shared on LinkedIn and X/Twitter.
 
 ## Structure
 
@@ -27,7 +27,7 @@ _posts/YYYY-MM-DD-<slug>.md  — Jekyll version for GitHub Pages
 - Each reference line must end with two trailing spaces for markdown line breaks
 - Each post should end with a discussion question
 - LinkedIn version should link to the full post on GitHub Pages (not the GitHub repo)
-  - URL pattern: `https://dangquan1402.github.io/community-contributor-posts/YYYY/MM/DD/<slug>.html`
+  - URL pattern: `https://dangquan1402.github.io/llm-engineering-notes/YYYY/MM/DD/<slug>.html`
 
 ## Jekyll Post Structure
 
@@ -159,5 +159,5 @@ PDF carousels for LinkedIn posts are generated from `carousels/` directory:
 
 - Theme: minima
 - Mermaid support: loaded via CDN in `_includes/mermaid.html`, included in `_layouts/post.html`
-- URL: https://dangquan1402.github.io/community-contributor-posts/
-- Post URL pattern: `https://dangquan1402.github.io/community-contributor-posts/YYYY/MM/DD/<slug>.html`
+- URL: https://dangquan1402.github.io/llm-engineering-notes/
+- Post URL pattern: `https://dangquan1402.github.io/llm-engineering-notes/YYYY/MM/DD/<slug>.html`

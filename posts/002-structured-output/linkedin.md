@@ -22,4 +22,4 @@ If you're still parsing LLM output with regex, stop. Structured output is mature
 
 What tools are you using for structured output?
 
-Full post: https://dangquan1402.github.io/community-contributor-posts/2026/04/02/structured-output-evolution.html
+Full post: https://dangquan1402.github.io/llm-engineering-notes/2026/04/02/structured-output-evolution.html

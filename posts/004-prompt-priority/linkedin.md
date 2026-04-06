@@ -23,4 +23,4 @@ In an agentic workflow with 10 tool calls, system + tools get cached on call 1. 
 
 Priority hierarchy isn't just about conflict resolution. It's about prompt architecture.
 
-Full post: https://dangquan1402.github.io/community-contributor-posts/2026/04/02/prompt-priority-and-caching-order.html
+Full post: https://dangquan1402.github.io/llm-engineering-notes/2026/04/02/prompt-priority-and-caching-order.html

@@ -48,6 +48,6 @@ For pure LLM I/O? Overkill.
 The LLM ecosystem is I/O-bound by nature. Your tools should reflect that.
 
 Full post with diagrams and code:
-dangquan1402.github.io/community-contributor-posts/2026/04/02/lightweight-task-queues-for-llm-apps.html
+dangquan1402.github.io/llm-engineering-notes/2026/04/02/lightweight-task-queues-for-llm-apps.html
 
 #LLM #Python #AI

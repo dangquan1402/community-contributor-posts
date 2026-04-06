@@ -14,4 +14,4 @@ Run the same prompt twice, get different results. For a chatbot, fine. For a sco
 
 6. Know the biases: position bias (prefers first response), verbosity bias (longer = higher score), self-preference (~10% boost for own model's output). Mitigate with order-swapping, length normalization, cross-model judging.
 
-Full post: https://dangquan1402.github.io/community-contributor-posts/2026/04/02/llm-consistency-scoring-system.html
+Full post: https://dangquan1402.github.io/llm-engineering-notes/2026/04/02/llm-consistency-scoring-system.html

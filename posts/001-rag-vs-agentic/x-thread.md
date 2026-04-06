@@ -40,6 +40,6 @@ It works remarkably well.
 Don't start with the most complex architecture. Start with a capable model, give it search tools, and let it reason.
 
 Full post with diagrams and references:
-dangquan1402.github.io/community-contributor-posts/2026/04/02/why-claude-code-works-and-rag-doesnt-have-to.html
+dangquan1402.github.io/llm-engineering-notes/2026/04/02/why-claude-code-works-and-rag-doesnt-have-to.html
 
 #LLM #RAG #AI

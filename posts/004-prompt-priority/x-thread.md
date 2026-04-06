@@ -37,6 +37,6 @@ Priority hierarchy isn't just conflict resolution — it's prompt architecture.
 
 6/6
 Full breakdown with diagrams and code examples:
-dangquan1402.github.io/community-contributor-posts/2026/04/02/prompt-priority-and-caching-order.html
+dangquan1402.github.io/llm-engineering-notes/2026/04/02/prompt-priority-and-caching-order.html
 
 #LLM #PromptEngineering #AI

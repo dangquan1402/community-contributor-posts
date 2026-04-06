@@ -47,6 +47,6 @@ Mitigate with order-swapping, length normalization, cross-model judging.
 
 7/7
 Full post with rubric examples and bias mitigation strategies:
-dangquan1402.github.io/community-contributor-posts/2026/04/02/llm-consistency-scoring-system.html
+dangquan1402.github.io/llm-engineering-notes/2026/04/02/llm-consistency-scoring-system.html
 
 #LLM #AIEngineering #PromptEngineering
