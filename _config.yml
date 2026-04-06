@@ -4,8 +4,7 @@ baseurl: "/llm-engineering-notes"
 url: "https://dangquan1402.github.io"
 theme: minima
 
-author:
-  name: Quan Dang
+author: Quan Dang
 
 show_excerpts: true
 
